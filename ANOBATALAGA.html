@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="fil">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Ano ba talaga tayo?</title>
+  <style>
+    :root{ --bg1:#ffe5ec; --bg2:#fff9fb; --accent:#ff5c8a; --accent2:#845ec2 }
+    html,body{height:100%;margin:0;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial}
+    body{background: linear-gradient(135deg,var(--bg1),var(--bg2)); display:flex;align-items:center;justify-content:center;padding:32px}
+
+    .card{width:880px;max-width:100%;background:rgba(255,255,255,0.88);backdrop-filter: blur(6px);border-radius:18px;box-shadow:0 10px 30px rgba(16,24,40,0.12);overflow:hidden;padding:48px;text-align:center;position:relative}
+
+    h1{margin:0 0 12px 0;font-size:30px;color:#0f172a}
+    p.lead{margin:0;color:#475569;font-size:18px}
+
+    .buttons{margin-top:32px;display:flex;gap:22px;justify-content:center;align-items:center;position:relative}
+    .btn{padding:14px 24px;border-radius:12px;border:0;font-weight:600;cursor:pointer;font-size:16px;box-shadow:0 6px 18px rgba(15,23,42,0.08);transition:all .2s ease}
+    .btn-yes{background:linear-gradient(90deg,var(--accent),var(--accent2));color:white}
+    .btn-yes:hover{transform:scale(1.05)}
+    .btn-no{background:white;border:1px solid #e6e6e6;color:#374151;position:relative}
+
+    .btn-no:hover{transform:translateX(-40px)}
+
+    .footer{margin-top:28px;color:#64748b;font-size:14px}
+
+    /* modal */
+    .modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,0.45);display:flex;align-items:center;justify-content:center;z-index:40;}
+    .modal{background:white;padding:28px;border-radius:16px;max-width:420px;width:92%;box-shadow:0 20px 40px rgba(2,6,23,0.2);text-align:center}
+    .close{background:#f1f5f9;border:0;padding:8px 16px;border-radius:8px;margin-top:16px;cursor:pointer}
+
+    /* hearts background */
+    .hearts{position:absolute;inset:0;pointer-events:none;opacity:0.35;z-index:-1}
+    .heart{position:absolute;width:18px;height:18px;transform:rotate(-45deg);}
+    .heart:before,.heart:after{content:'';position:absolute;width:18px;height:18px;border-radius:50%;background:var(--accent)}
+    .heart:before{top:-9px;left:0}
+    .heart:after{left:9px;top:0}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Ano ba talaga tayo? 🤔</h1>
+    <p class="lead">Pumili ka ng totoo... pero sana yung tama. 😉</p>
+
+    <div class="buttons">
+      <button class="btn btn-yes" id="yesBtn">Ka-ibigan 💖</button>
+      <button class="btn btn-no" id="noBtn">Kaibigan 🙂</button>
+    </div>
+
+    <div class="footer">Ginawa para sa tanong na matagal nang iniisip ✨</div>
+
+    <div class="hearts" aria-hidden="true"></div>
+  </div>
+
+  <!-- modal -->
+  <template id="modalTpl">
+    <div class="modal-backdrop" role="dialog" aria-modal="true">
+      <div class="modal">
+        <div id="modalContent"></div>
+        <button class="close" id="modalClose">Isara</button>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    const $ = (s) => document.querySelector(s);
+
+    // If "Ka-ibigan" is clicked
+    $('#yesBtn').addEventListener('click', () => {
+      showModal('<h2>Yieee! 🥰</h2><p>So, tayo pala ay <strong>Ka-ibigan</strong> 💕</p>');
+      launchConfetti();
+    });
+
+    // If "Kaibigan" is hovered, it dodges
+    const noBtn = $('#noBtn');
+    noBtn.addEventListener('mouseover', () => {
+      const parent = noBtn.parentElement.getBoundingClientRect();
+      const x = Math.random() * (parent.width - noBtn.offsetWidth);
+      noBtn.style.position = 'absolute';
+      noBtn.style.left = x + 'px';
+    });
+
+    function showModal(html){
+      const tpl = document.getElementById('modalTpl');
+      const node = tpl.content.cloneNode(true);
+      node.querySelector('#modalContent').innerHTML = html;
+      document.body.appendChild(node);
+      const close = document.getElementById('modalClose');
+      close.focus();
+      close.addEventListener('click', () => {
+        document.querySelector('.modal-backdrop').remove();
+      });
+    }
+
+    // confetti effect
+    function launchConfetti(){
+      const canvas = document.createElement('canvas');
+      canvas.style.position='fixed';canvas.style.left=0;canvas.style.top=0;canvas.style.zIndex=9999;canvas.width=innerWidth;canvas.height=innerHeight;
+      document.body.appendChild(canvas);
+      const ctx = canvas.getContext('2d');
+      const pieces = [];
+      for(let i=0;i<180;i++) pieces.push({x:Math.random()*canvas.width,y:Math.random()*-canvas.height,vy:Math.random()*3+1,r:Math.random()*6+3,angle:Math.random()*360,color:randomColor()});
+      let t=0; const anim = () => {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        pieces.forEach(p=>{
+          p.y += p.vy; p.angle += 6; ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.angle*Math.PI/180);
+          ctx.fillStyle = p.color; ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r); ctx.restore();
+        });
+        t+=1;
+        if(t<200) requestAnimationFrame(anim); else { canvas.remove(); }
+      };
+      anim();
+    }
+    function randomColor(){
+      const palette = ['#FF5C8A','#845EC2','#FFD166','#06D6A0','#4CC9F0']; return palette[Math.floor(Math.random()*palette.length)];
+    }
+
+    // hearts background
+    (function makeHearts(){
+      const container = document.querySelector('.hearts');
+      for(let i=0;i<20;i++){
+        const h = document.createElement('div'); h.className='heart';
+        const size = 10 + Math.random()*20; h.style.width = size+'px'; h.style.height = size+'px';
+        h.style.left = (Math.random()*100)+'%'; h.style.top = (Math.random()*100)+'%'; h.style.opacity = 0.4 + Math.random()*0.6;
+        container.appendChild(h);
+      }
+    })();
+  </script>
+</body>
+</html>
