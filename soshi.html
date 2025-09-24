@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Get Well Soon</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #ffe6e6, #fff9f9);
+    }
+    .card {
+      max-width: 650px;
+      background: white;
+      padding: 36px;
+      border-radius: 18px;
+      box-shadow: 0 12px 28px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    h1 {
+      margin: 0 0 14px;
+      font-size: 30px;
+      color: #d6336c;
+    }
+    p {
+      margin: 12px 0;
+      font-size: 18px;
+      line-height: 1.6;
+      color: #444;
+    }
+    .heart {
+      color: #ff4d6d;
+      font-size: 38px;
+      margin-top: 18px;
+      animation: beat 1.2s infinite;
+    }
+    @keyframes beat {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.3); }
+    }
+    button {
+      margin-top: 22px;
+      padding: 12px 22px;
+      font-size: 16px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(90deg, #ff4d6d, #d6336c);
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 6px 14px rgba(214,51,108,0.2);
+      transition: transform 0.2s ease;
+    }
+    button:hover {
+      transform: scale(1.05);
+    }
+    .footer {
+      margin-top: 22px;
+      font-size: 14px;
+      color: #888;
+    }
+    /* modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+    .modal {
+      background: white;
+      padding: 28px;
+      border-radius: 16px;
+      max-width: 480px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    }
+    .modal h2 {
+      margin-top: 0;
+      color: #d6336c;
+    }
+    .close-btn {
+      margin-top: 18px;
+      padding: 10px 18px;
+      border: none;
+      border-radius: 10px;
+      background: #f1f5f9;
+      cursor: pointer;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <!-- Background Music -->
+  <audio autoplay loop>
+    <source src="https://www.bensound.com/bensound-music/bensound-slowmotion.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+
+  <div class="card">
+    <h1>Get Well Soon 🌸</h1>
+    <p>Hey, I heard you’re not feeling well and have a fever. I just want you to know that it’s completely okay to rest. Please don’t feel bad about taking time for yourself. Your health is important, and you deserve to slow down and recover fully. 💖</p>
+    <p>I may not be there in person, but I’m always thinking of you and wishing you comfort. Remember to drink plenty of water, take your medicine on time, and get enough sleep. Don’t worry about anything else right now — just focus on feeling better. 🛏️✨</p>
+    <p>You are stronger than you think, and this fever will pass. I’ll be here, cheering for you every step of the way, waiting for the day you feel like your happy, energetic self again. 🌼</p>
+    <p>Take this as a reminder that you are cared for, loved, and never alone. Rest well, heal quickly, and let your smile shine brighter once you’re better. 🌞</p>
+    <div class="heart">❤️</div>
+    <button id="cheerBtn">Cheer Up 🌟</button>
+    <div class="footer">Made with care by your friend 🤗</div>
+  </div>
+
+  <!-- modal -->
+  <template id="modalTpl">
+    <div class="modal-backdrop">
+      <div class="modal">
+        <h2>A Little Reminder 🌷</h2>
+        <p>You’re not just strong, you’re amazing. This fever is only temporary — but my care and support for you will always stay. Take your time to rest, don’t rush, and know that I’ll be right here waiting to see you happy and healthy again. 💕</p>
+        <button class="close-btn" id="closeModal">Close</button>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    const cheerBtn = document.getElementById('cheerBtn');
+    cheerBtn.addEventListener('click', () => {
+      const tpl = document.getElementById('modalTpl');
+      const node = tpl.content.cloneNode(true);
+      document.body.appendChild(node);
+      document.getElementById('closeModal').addEventListener('click', () => {
+        document.querySelector('.modal-backdrop').remove();
+      });
+    });
+  </script>
+</body>
+</html>
