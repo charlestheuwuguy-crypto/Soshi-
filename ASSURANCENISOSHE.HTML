@@ -1,0 +1,71 @@
+<!--
+Assurance & "Miss You" Letter — single-file HTML
+- Single HTML file that displays the short emotional letter and provides buttons to copy the text or download as a .txt file.
+- Edit the message inside the <pre id="letterText"> block if you want to change wording.
+-->
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Assurance Letter</title>
+  <style>
+    body{font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:linear-gradient(180deg,#fff,#f7fbff)}
+    .card{width:min(720px,94vw);background:white;border-radius:12px;box-shadow:0 8px 24px rgba(12,20,30,0.08);padding:28px}
+    h1{margin:0 0 8px;font-size:18px}
+    pre{background:#fcfcff;border:1px solid #eef2ff;padding:18px;border-radius:10px;white-space:pre-wrap;font-size:15px;line-height:1.5}
+    .controls{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+    button{background:#0ea5a4;border:none;color:white;padding:10px 12px;border-radius:10px;cursor:pointer}
+    button.ghost{background:transparent;border:1px solid #e6e9ee;color:#0f172a}
+    .small{font-size:13px;color:#6b7280;margin-top:10px}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Assurance & "Miss You" — Letter</h1>
+    <pre id="letterText">Hey Seysey,
+I just wanted to check in and let you know that I’ve been thinking about you lately. I know things haven’t been the same, but I still care — truly. You’ve always meant something to me, and that won’t just disappear.
+
+If ever you feel alone or unsure, I hope you remember that someone out here still wishes you comfort, peace, and happiness. You deserve to rest your heart and feel loved again.
+
+And… yeah, I miss you. Not in a way that hurts anymore, but in a soft, quiet way — like missing a song that once felt like home.
+
+Take care of yourself, okay?
+
+— Soshe</pre>
+
+    <div class="controls">
+      <button id="copyBtn">Copy</button>
+      <button id="downloadBtn" class="ghost">Download .txt</button>
+    </div>
+    <div class="small">Tip: Edit the letter directly in the code if you want a different name or tone.</div>
+  </div>
+
+  <script>
+    const copyBtn = document.getElementById('copyBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const letter = document.getElementById('letterText').innerText;
+
+    copyBtn.addEventListener('click', async ()=>{
+      try{
+        await navigator.clipboard.writeText(letter);
+        copyBtn.textContent = 'Copied!';
+        setTimeout(()=>copyBtn.textContent='Copy',1200);
+      }catch(e){
+        copyBtn.textContent = 'Failed';
+        setTimeout(()=>copyBtn.textContent='Copy',1200);
+      }
+    });
+
+    downloadBtn.addEventListener('click', ()=>{
+      const blob = new Blob([letter], {type: 'text/plain'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'assurance-letter.txt';
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    });
+  </script>
+</body>
+</html>
