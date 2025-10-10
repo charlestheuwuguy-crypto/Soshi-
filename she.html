@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>SOSHEY?</title>
+  <style>
+    :root{--bg:#0f172a;--card:#0b1220;--accent:#f97316;--muted:#94a3b8}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,'Helvetica Neue',Arial;color:#e6eef8;background:linear-gradient(180deg,#071029 0%, #0b1220 100%);display:flex;align-items:center;justify-content:center;height:100vh}
+    .card{width:92%;max-width:760px;background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);border:1px solid rgba(255,255,255,0.03);padding:28px;border-radius:14px;box-shadow:0 10px 30px rgba(2,6,23,0.7)}
+    h1{margin:0 0 6px;font-size:20px;letter-spacing:0.4px}
+    p.lead{margin:0 0 18px;color:var(--muted)}
+    .letter{background:rgba(255,255,255,0.02);padding:18px;border-radius:10px;border:1px solid rgba(255,255,255,0.02)}
+    .line{opacity:0;transform:translateY(8px);transition:all 420ms cubic-bezier(.2,.9,.2,1);margin:10px 0}
+    .line.visible{opacity:1;transform:none}
+    .meta{font-size:13px;color:var(--muted);margin-top:12px}
+    .actions{display:flex;gap:10px;margin-top:16px}
+    button{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 12px;border-radius:8px;color:#e6eef8;cursor:pointer}
+    button.primary{background:linear-gradient(90deg,var(--accent),#ffb86b);border:none;color:#081028}
+    @media (max-width:520px){.card{padding:18px}}
+  </style>
+</head>
+<body>
+  <div class="card" role="main">
+    <h1>SOSHEY?</h1>
+    <p class="lead">A short, heartfelt confession you can reveal line by line when you press <strong>Reveal</strong>.</p>
+
+    <div class="letter" aria-live="polite">
+      <div class="line" id="l1">Hey — I need to tell you something honest.</div>
+      <div class="line" id="l2">I think I first noticed you back in August. It started as a quiet admiration that grew into something I couldn't keep inside.</div>
+      <div class="line" id="l3">We met during the Feast Novena, and that day settled something in me — your presence felt like home, and I couldn't stop smiling after.</div>
+      <div class="line" id="l4">I love your eyes — the way they light up when you talk, the way they seem to understand things without words.</div>
+      <div class="line" id="l5">I love how intelligent you are — you think clearly, you challenge me to be better, and your curiosity makes every conversation richer.</div>
+      <div class="line" id="l6">I love your attitude — gentle when it matters, strong when needed, and kind in a way that makes people around you calmer and braver.</div>
+      <div class="line" id="l7">And I love how you interact with me — the little jokes, the thoughtful replies, the way you make even ordinary moments feel important.</div>
+      <div class="line" id="l8">I don't expect you to answer right away. I only wanted you to know what's been in my heart for a long time.</div>
+      <div class="line" id="l9">If you feel anything close to this, I'd be the luckiest person. If not, I promise to respect you and keep our honesty between us.</div>
+      <div class="line" id="l10">With all my sincerity,</div>
+      <div class="line" id="l11"><strong>SOSHE</strong> <span class="hearts">♥</span></div>
+    </div>
+
+    <div class="actions">
+      <button id="revealBtn" aria-controls="letter">Reveal</button>
+      <button class="primary" id="resetBtn">Reset</button>
+    </div>
+
+    <div class="meta">Tip: Replace <em>Your Name</em> with your name.</div>
+  </div>
+
+  <script>
+    const lines = Array.from(document.querySelectorAll('.line'));
+    const revealBtn = document.getElementById('revealBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    let index = 0;
+
+    function showNext(){
+      if(index < lines.length){
+        lines[index].classList.add('visible');
+        index++;
+      }
+      if(index === lines.length) revealBtn.disabled = true;
+    }
+
+    function reset(){
+      lines.forEach(l => l.classList.remove('visible'));
+      index = 0; revealBtn.disabled = false;
+    }
+
+    revealBtn.addEventListener('click', showNext);
+    resetBtn.addEventListener('click', reset);
+
+    // optional: reveal first line on load
+    window.addEventListener('load',()=>{lines[0].classList.add('visible'); index=1});
+  </script>
+</body>
+</html>
