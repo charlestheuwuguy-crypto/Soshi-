@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Maze Game</title>
+<title>Ultimate Maze Game</title>
 
 <style>
 body {
@@ -22,23 +22,24 @@ body {
 
 canvas {
     background: #000;
-    border: 3px solid white;
+    border: 3px solid #fff;
+    touch-action: none;
 }
 
 button {
     padding: 10px 18px;
-    margin: 5px;
     font-size: 16px;
+    margin: 4px;
     border: none;
     border-radius: 6px;
     background: #4CAF50;
-    color: white;
+    color: #fff;
 }
 
 .controls {
     display: grid;
-    grid-template-columns: repeat(3, 60px);
-    gap: 5px;
+    grid-template-columns: repeat(3, 70px);
+    gap: 6px;
     justify-content: center;
     margin-top: 10px;
 }
@@ -53,12 +54,14 @@ button {
 
 <body>
 
+<!-- MENU -->
 <div id="menu" class="screen active">
-    <h1>🧩 Maze Game</h1>
-    <p>Each level gets harder. Be fast!</p>
-    <button onclick="startGame()">Start</button>
+    <h1>🧩 Ultimate Maze Game</h1>
+    <p>Swipe, hold, or use keys to escape.<br>Enemies will chase you!</p>
+    <button onclick="startGame()">Start Game</button>
 </div>
 
+<!-- GAME -->
 <div id="game" class="screen">
     <div class="info">
         <div>⏱ <span id="time">0</span>s</div>
@@ -68,11 +71,21 @@ button {
 
     <canvas id="maze" width="320" height="320"></canvas>
 
+    <!-- TOUCH CONTROLS -->
     <div class="controls">
-        <div></div><button onclick="move(0,-1)">⬆</button><div></div>
-        <button onclick="move(-1,0)">⬅</button>
-        <button onclick="move(0,1)">⬇</button>
-        <button onclick="move(1,0)">➡</button>
+        <div></div>
+        <button onmousedown="startMove(0,-1)" onmouseup="stopMove()"
+                ontouchstart="startMove(0,-1)" ontouchend="stopMove()">⬆</button>
+        <div></div>
+
+        <button onmousedown="startMove(-1,0)" onmouseup="stopMove()"
+                ontouchstart="startMove(-1,0)" ontouchend="stopMove()">⬅</button>
+
+        <button onmousedown="startMove(0,1)" onmouseup="stopMove()"
+                ontouchstart="startMove(0,1)" ontouchend="stopMove()">⬇</button>
+
+        <button onmousedown="startMove(1,0)" onmouseup="stopMove()"
+                ontouchstart="startMove(1,0)" ontouchend="stopMove()">➡</button>
     </div>
 </div>
 
@@ -82,8 +95,11 @@ const game = document.getElementById("game");
 const canvas = document.getElementById("maze");
 const ctx = canvas.getContext("2d");
 
-let level = 1, score = 0, time = 0, timer;
+let level = 1, score = 0, time = 0;
 let maze, size, tile, player, goal;
+let timer, moveInterval, enemyTimer;
+let enemies = [];
+let smoothPlayer = {x:1, y:1};
 
 // START GAME
 function startGame() {
@@ -92,92 +108,160 @@ function startGame() {
     startLevel();
 }
 
-// LEVEL SETUP
+// START LEVEL
 function startLevel() {
-    size = 5 + level * 2;           // HARDER EACH LEVEL
+    size = 5 + level * 2;
     tile = canvas.width / size;
-
     maze = generateMaze(size);
+
     player = { x: 1, y: 1 };
     goal = { x: size - 2, y: size - 2 };
+    smoothPlayer = {...player};
+
+    enemies = [];
+    for (let i = 0; i < Math.min(level, 4); i++) {
+        enemies.push({ x: size - 2 - i, y: 1 });
+    }
 
     time = 0;
     document.getElementById("level").textContent = level;
+
     clearInterval(timer);
     timer = setInterval(() => {
         time++;
         document.getElementById("time").textContent = time;
     }, 1000);
 
-    draw();
+    clearInterval(enemyTimer);
+    enemyTimer = setInterval(moveEnemies, Math.max(600 - level * 80, 200));
+
+    requestAnimationFrame(draw);
 }
 
-// MAZE GENERATOR (FIXED)
+// MAZE GENERATOR
 function generateMaze(n) {
-    let m = Array.from({ length: n }, () => Array(n).fill(1));
-
-    function carve(x, y) {
-        const dirs = [[1,0],[-1,0],[0,1],[0,-1]].sort(() => Math.random() - 0.5);
-        for (let [dx, dy] of dirs) {
-            let nx = x + dx * 2;
-            let ny = y + dy * 2;
-            if (nx > 0 && ny > 0 && nx < n-1 && ny < n-1 && m[ny][nx] === 1) {
-                m[y+dy][x+dx] = 0;
-                m[ny][nx] = 0;
-                carve(nx, ny);
+    let m = Array.from({length:n}, () => Array(n).fill(1));
+    function carve(x,y) {
+        let dirs = [[1,0],[-1,0],[0,1],[0,-1]].sort(() => Math.random()-0.5);
+        for (let [dx,dy] of dirs) {
+            let nx = x + dx*2, ny = y + dy*2;
+            if (nx>0 && ny>0 && nx<n-1 && ny<n-1 && m[ny][nx]===1) {
+                m[y+dy][x+dx]=0;
+                m[ny][nx]=0;
+                carve(nx,ny);
             }
         }
     }
-
-    m[1][1] = 0;
+    m[1][1]=0;
     carve(1,1);
-    m[n-2][n-2] = 0; // GUARANTEED GOAL
+    m[n-2][n-2]=0;
     return m;
 }
 
-// DRAW
+// DRAW LOOP
 function draw() {
     ctx.clearRect(0,0,canvas.width,canvas.height);
 
     for (let y=0;y<size;y++) {
         for (let x=0;x<size;x++) {
-            if (maze[y][x] === 1) {
-                ctx.fillStyle = "#333";
+            if (maze[y][x]===1) {
+                ctx.fillStyle="#333";
                 ctx.fillRect(x*tile,y*tile,tile,tile);
             }
         }
     }
 
-    ctx.fillStyle = "lime";
+    ctx.fillStyle="lime";
     ctx.fillRect(goal.x*tile,goal.y*tile,tile,tile);
 
-    ctx.fillStyle = "red";
-    ctx.fillRect(player.x*tile,player.y*tile,tile,tile);
+    smoothPlayer.x += (player.x - smoothPlayer.x) * 0.3;
+    smoothPlayer.y += (player.y - smoothPlayer.y) * 0.3;
+
+    ctx.fillStyle="red";
+    ctx.fillRect(smoothPlayer.x*tile,smoothPlayer.y*tile,tile,tile);
+
+    ctx.fillStyle="orange";
+    enemies.forEach(e=>{
+        ctx.fillRect(e.x*tile,e.y*tile,tile,tile);
+    });
+
+    requestAnimationFrame(draw);
 }
 
-// MOVE
+// MOVE PLAYER
 function move(dx,dy) {
-    if (maze[player.y+dy]?.[player.x+dx] === 0) {
-        player.x += dx;
-        player.y += dy;
+    if (maze[player.y+dy]?.[player.x+dx]===0) {
+        player.x+=dx;
+        player.y+=dy;
     }
 
-    if (player.x === goal.x && player.y === goal.y) {
+    if (player.x===goal.x && player.y===goal.y) {
         clearInterval(timer);
-        score += Math.max(150 - time * level, 20);
+        score += Math.max(200 - time*level, 30);
         document.getElementById("score").textContent = score;
         level++;
         setTimeout(startLevel, 600);
     }
-    draw();
+
+    enemies.forEach(e=>{
+        if (e.x===player.x && e.y===player.y) gameOver();
+    });
+}
+
+// LONG PRESS
+function startMove(dx,dy){
+    if(moveInterval) return;
+    move(dx,dy);
+    moveInterval=setInterval(()=>move(dx,dy),150);
+}
+function stopMove(){
+    clearInterval(moveInterval);
+    moveInterval=null;
+}
+
+// ENEMIES
+function moveEnemies(){
+    enemies.forEach(e=>{
+        let dx=Math.sign(player.x-e.x);
+        let dy=Math.sign(player.y-e.y);
+
+        if(maze[e.y][e.x+dx]===0) e.x+=dx;
+        else if(maze[e.y+dy]?.[e.x]===0) e.y+=dy;
+
+        if(e.x===player.x && e.y===player.y) gameOver();
+    });
+}
+
+// GAME OVER
+function gameOver(){
+    alert("💀 You were caught!");
+    location.reload();
 }
 
 // KEYBOARD
-document.addEventListener("keydown", e => {
-    if (e.key === "ArrowUp") move(0,-1);
-    if (e.key === "ArrowDown") move(0,1);
-    if (e.key === "ArrowLeft") move(-1,0);
-    if (e.key === "ArrowRight") move(1,0);
+document.addEventListener("keydown",e=>{
+    if(e.key==="ArrowUp") move(0,-1);
+    if(e.key==="ArrowDown") move(0,1);
+    if(e.key==="ArrowLeft") move(-1,0);
+    if(e.key==="ArrowRight") move(1,0);
+});
+
+// SWIPE
+let sx, sy;
+canvas.addEventListener("touchstart",e=>{
+    sx=e.touches[0].clientX;
+    sy=e.touches[0].clientY;
+});
+canvas.addEventListener("touchend",e=>{
+    let dx=e.changedTouches[0].clientX-sx;
+    let dy=e.changedTouches[0].clientY-sy;
+    if(Math.abs(dx)>Math.abs(dy)){
+        if(dx>30) move(1,0);
+        if(dx<-30) move(-1,0);
+    }else{
+        if(dy>30) move(0,1);
+        if(dy<-30) move(0,-1);
+    }
 });
 </script>
 
