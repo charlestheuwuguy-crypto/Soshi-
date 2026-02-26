@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maze Game</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #111;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.screen { display: none; text-align: center; }
+.active { display: block; }
+
+canvas {
+    background: #000;
+    border: 3px solid white;
+}
+
+button {
+    padding: 10px 18px;
+    margin: 5px;
+    font-size: 16px;
+    border: none;
+    border-radius: 6px;
+    background: #4CAF50;
+    color: white;
+}
+
+.controls {
+    display: grid;
+    grid-template-columns: repeat(3, 60px);
+    gap: 5px;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.info {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 8px;
+}
+</style>
+</head>
+
+<body>
+
+<div id="menu" class="screen active">
+    <h1>🧩 Maze Game</h1>
+    <p>Each level gets harder. Be fast!</p>
+    <button onclick="startGame()">Start</button>
+</div>
+
+<div id="game" class="screen">
+    <div class="info">
+        <div>⏱ <span id="time">0</span>s</div>
+        <div>⭐ <span id="score">0</span></div>
+        <div>🧠 Lv <span id="level">1</span></div>
+    </div>
+
+    <canvas id="maze" width="320" height="320"></canvas>
+
+    <div class="controls">
+        <div></div><button onclick="move(0,-1)">⬆</button><div></div>
+        <button onclick="move(-1,0)">⬅</button>
+        <button onclick="move(0,1)">⬇</button>
+        <button onclick="move(1,0)">➡</button>
+    </div>
+</div>
+
+<script>
+const menu = document.getElementById("menu");
+const game = document.getElementById("game");
+const canvas = document.getElementById("maze");
+const ctx = canvas.getContext("2d");
+
+let level = 1, score = 0, time = 0, timer;
+let maze, size, tile, player, goal;
+
+// START GAME
+function startGame() {
+    menu.classList.remove("active");
+    game.classList.add("active");
+    startLevel();
+}
+
+// LEVEL SETUP
+function startLevel() {
+    size = 5 + level * 2;           // HARDER EACH LEVEL
+    tile = canvas.width / size;
+
+    maze = generateMaze(size);
+    player = { x: 1, y: 1 };
+    goal = { x: size - 2, y: size - 2 };
+
+    time = 0;
+    document.getElementById("level").textContent = level;
+    clearInterval(timer);
+    timer = setInterval(() => {
+        time++;
+        document.getElementById("time").textContent = time;
+    }, 1000);
+
+    draw();
+}
+
+// MAZE GENERATOR (FIXED)
+function generateMaze(n) {
+    let m = Array.from({ length: n }, () => Array(n).fill(1));
+
+    function carve(x, y) {
+        const dirs = [[1,0],[-1,0],[0,1],[0,-1]].sort(() => Math.random() - 0.5);
+        for (let [dx, dy] of dirs) {
+            let nx = x + dx * 2;
+            let ny = y + dy * 2;
+            if (nx > 0 && ny > 0 && nx < n-1 && ny < n-1 && m[ny][nx] === 1) {
+                m[y+dy][x+dx] = 0;
+                m[ny][nx] = 0;
+                carve(nx, ny);
+            }
+        }
+    }
+
+    m[1][1] = 0;
+    carve(1,1);
+    m[n-2][n-2] = 0; // GUARANTEED GOAL
+    return m;
+}
+
+// DRAW
+function draw() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    for (let y=0;y<size;y++) {
+        for (let x=0;x<size;x++) {
+            if (maze[y][x] === 1) {
+                ctx.fillStyle = "#333";
+                ctx.fillRect(x*tile,y*tile,tile,tile);
+            }
+        }
+    }
+
+    ctx.fillStyle = "lime";
+    ctx.fillRect(goal.x*tile,goal.y*tile,tile,tile);
+
+    ctx.fillStyle = "red";
+    ctx.fillRect(player.x*tile,player.y*tile,tile,tile);
+}
+
+// MOVE
+function move(dx,dy) {
+    if (maze[player.y+dy]?.[player.x+dx] === 0) {
+        player.x += dx;
+        player.y += dy;
+    }
+
+    if (player.x === goal.x && player.y === goal.y) {
+        clearInterval(timer);
+        score += Math.max(150 - time * level, 20);
+        document.getElementById("score").textContent = score;
+        level++;
+        setTimeout(startLevel, 600);
+    }
+    draw();
+}
+
+// KEYBOARD
+document.addEventListener("keydown", e => {
+    if (e.key === "ArrowUp") move(0,-1);
+    if (e.key === "ArrowDown") move(0,1);
+    if (e.key === "ArrowLeft") move(-1,0);
+    if (e.key === "ArrowRight") move(1,0);
+});
+</script>
+
+</body>
+</html>
